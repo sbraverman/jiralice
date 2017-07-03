@@ -1,0 +1,4 @@
+nose
+requests
+pyaml
+mock
