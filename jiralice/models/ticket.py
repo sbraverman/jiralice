@@ -1,8 +1,10 @@
+import sys
 import os
 import requests
 import json
 from requests.auth import HTTPBasicAuth
 import logging
+from chalice import BadRequestError
 
 class Ticket(object):
 
@@ -13,20 +15,20 @@ class Ticket(object):
     ISSUE_TYPE_KEY = 'issuetype'
     LABELS_KEY = 'labels'
 
-    A_JIRA_URL = os.environ['A_JIRA_URL']
-    JIRA_PROJECT = os.environ['JIRA_PROJECT']
-    CUSTOME_FIELDS = os.environ['CUSTOM_FIELDS']
-    ISSUE_TYPE = os.environ['ISSUE_TYPE']
-    LABELS = os.environ['LABELS']
-    JIRA_USERNAME = os.environ['JIRA_USENAME']
-    JIRA_PASSWORD = os.environ['JIRA_PASSWORD']
 
 
-    def __init__(self, data):
+    def __init__(self, data, env_vars):
+        self.JIRA_URL = env_vars['JIRA_URL']
+        self.JIRA_PROJECT = env_vars['JIRA_PROJECT']
+        self.CUSTOM_FIELDS = self.get_custom_fields(env_vars['CUSTOM_FIELDS'])
+        self.ISSUE_TYPE = env_vars['ISSUE_TYPE']
+        self.LABELS = self.get_labels(env_vars['LABELS'])
+        self.JIRA_USERNAME = env_vars['JIRA_USERNAME']
+        self.JIRA_PASSWORD = env_vars['JIRA_PASSWORD']
         self.incident_number = self.get_incident_number(data)
         self.summary = self.get_summary(data)
         self.ticket_data = {self.FIELDS_KEY: {}}
-        self.jira_auth = self.get_jira_auth()
+        self.jira_auth = self.get_jira_auth(self.JIRA_USERNAME, self.JIRA_PASSWORD)
         self.ticket_url = None
         self.pager_duty_link = self.get_pager_duty_link(data)
         self.set_ticket_data()
@@ -45,10 +47,10 @@ class Ticket(object):
             create_ticket_url = '{0}/rest/api/2/issue/'.format(self.JIRA_URL)
             request = requests.post(create_ticket_url, headers=headers, auth=self.jira_auth, data=json.dumps(self.ticket_data))
             # Printing below will help determine why ticket creation failed. e.g. "custom_fields" your ticket requires 
-            print request.text
+            #print request.text
             self.ticket_url = request.json()['key']
         except Exception as e:
-            raise BadRequestError('Error occurred while creating ticket', e)
+            raise BadRequestError('Error occurred while creating ticket. {0}'.format(e))
 
     @classmethod
     def exists(cls, data):
@@ -83,7 +85,9 @@ class Ticket(object):
         return {self.PROJECT_KEY: {'key': self.JIRA_PROJECT}}
 
     def get_labels_field(self): 
-        return {self.LABELS_KEY: self.LABELS}
+        if self.LABELS:
+            return {self.LABELS_KEY: self.LABELS}
+        return {}
 
     def get_summary_field(self): 
         return {self.SUMMARY_KEY: "[PagerDuty] {0}: {1}".format(self.incident_number, self.summary)}
@@ -105,6 +109,22 @@ class Ticket(object):
         return data['incident']['html_url'] 
 
     @classmethod
-    def get_jira_auth(cls):
-        return HTTPBasicAuth(cls.JIRA_USERNAME, cls.JIRA_PASSWORD)
+    def get_jira_auth(cls, username, password):
+        return HTTPBasicAuth(username, password)
 
+    def get_labels(self, label_data):
+        if not label_data:
+            return []
+        return label_data.split(',')
+
+    def get_custom_fields(self, custom_fields_data):
+        if not custom_fields_data:
+            return {}
+        custom_fields = {}
+        custom_field_objects = custom_fields_data.split(',')
+        for custom_field in custom_field_object:
+            custom_field_item = custom_field.split(':')
+            key = custom_field_item[0]
+            value = custom_field_item[1]
+            custom_fields[key] = value
+        return custom_fields

@@ -1,4 +1,5 @@
 from chalice import Chalice
+import os
 
 from controllers.jiralice import JiraliceController
 
@@ -8,10 +9,13 @@ app.debug = True
 
 @app.route('/')
 def index():
-    return app.current_request.stage_vars 
+    return {'s': os.environ['JIRA_URL']} 
     return {"hello": "Word"}
 
-@app.route('/create-ticket', methods=['POST'], api_key_required=True)
+@app.route('/create-ticket', methods=['POST'])
 def create_ticket():
-    return JiraliceController(app).create_ticket()
+    try:
+        return JiraliceController(app, os.environ).create_ticket()
+    except Exception as e:
+        return {"No": "yes"}
 

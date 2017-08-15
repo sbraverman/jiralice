@@ -2,46 +2,9 @@ from chalice import BadRequestError, ChaliceViewError
 from marshmallow import Schema, fields
 
 class Schemas:
-    class CreateTicket(Schema):
-        messages = fields.Str(required=True)
-
-    """
-    class LoginSchema(Schema):
-        email = fields.Email(required=True)
-        password = fields.Str(required=True)
-
-    class RegisterSchema(LoginSchema):
-        first_name = fields.Str(required=True)
-        last_name = fields.Str(required=True)
-        birthday = fields.Date(required=True)
-
-    class RegisteredSchema(Schema):
-        user_token = fields.Str(required=True)
-
-    class PinNumberSchema(RegisteredSchema):
-        pn = fields.Integer(required=True)
-
-    class StartEventSchema(PinNumberSchema):
-        drink_level = fields.Integer(required=True)
-
-    class LevelEventSchema(RegisteredSchema):
-        confirm_level = fields.Str(required=True)
-
-    class TestAwkSchema(Schema):
+    class CreateTicketSchema(Schema):
         pass
 
-    class EndEventSchema(RegisteredSchema):
-        pass
-
-    class AlertSchema(RegisteredSchema):
-        pass
-
-    class ViewEventsSchema(Schema):
-        pass
-
-    class ValidateUserSchema(RegisteredSchema):
-        verification_token = fields.Str(required=True)
-    """
 
 class Validator(object):
 
