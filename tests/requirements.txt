@@ -2,3 +2,5 @@ nose
 requests
 pyaml
 mock
+chalice
+marshmallow

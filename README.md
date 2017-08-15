@@ -1,85 +1,85 @@
-# pd2jira_python [![Build Status](https://travis-ci.org/sbraverman/pd2jira_python.svg)](https://travis-ci.org/sbraverman/pd2jira_python)
-Generate JIRA tickets from Pager Duty alerts using Amazon Web Services (AWS) Lambda!
+# JIRAlice [![Build Status](https://travis-ci.org/sbraverman/jiralice.svg)](https://travis-ci.org/sbraverman/jiralice)
+Generate JIRA tickets from Pager Duty webhooks via [Chalice](https://github.com/awslabs/chalice)!
 
-## What is pd2jira\_python?
-pd2jira\_python is an open source project that creates JIRA tickets from Pager Duty webhooks using AWS Lambda. This is a new option for making JIRA tickets from Pager Duty alerts.
+# What is JIRAlice?
+JIRAlice is a mashup of JIRA and Chalice. 
+Open source project that creates JIRA tickets from Pager Duty webhooks using AWS Lambda Function and API Gateway (deployed/managed by Chalice).
+
+This is a new option for making JIRA tickets from Pager Duty alerts.
 No need to host the code on your personal server (unless you want to). 
+Customizable to fit your requirements. 
+Easy to setup. 
 
-pd2jira\_python uses the following technologies:
+JIRAlice uses the following technologies:
 * Python2.7
 * AWS Lambda
 * AWS API Gateway
+* CloudWatch (Lambda Logs)
 * PagerDuty Webhooks
 
-## Let's get started!
-pd2jira-python will be up and running within minutes. Just follow this guide!
+# Let's get started!
+JIRAlice will be up and running within minutes. Just follow this guide!
 
 1. Fork this project into your account and clone into local directory
-  ``` bash 
-  git clone git@github.com:<your_github_handle>/pd2jira-python.git
+
+  ```
+  git clone git@github.com:<your_github_handle>/JIRAlice.git
   ```
 _note: replace <your_github_handle> with your Github handle_
 
-2. Replace the comments in the Configs file with your credentials
-_pd2jira-python/pd2jira-python/configs.yml_
+2. Replace the example data in the environment_variables key inside:
+_jiralice/.chalice/configs.json
 Explanations:
-  * jira_url -- the site which your JIRA application is hosted from
-  * jira_username -- Username for which the JIRA tickets will be "created by." User must be registered with your JIRA account. 
-  * jira_password -- Password for the above user. 
-  * jira_project -- the project for which the ticket will be generated for. If DEVOPS was your project, ticket URL would be: https://<your_jira_site>.jira.com/browse/DEVOPS-6756 
-  * Examples (from explanations above):
-  ``` yaml
-  jira_url: https://<your_jira_site>.jira.com 
-  jira_username: Team_Account
-  jira_password: topsecretpassword
-  jira_project: DEVOPS
+  * JIRA_URL -- the site which your JIRA application is hosted from
+  * JIRA_USERNAME -- Username for service user account for which the JIRA tickets will be "created by." User must be registered with your JIRA account and have permissions to create tickets in the project specified below. 
+  * JIRA_PASSWORD -- Password for the above user. 
+  * JIRA_PROJECT -- the project for which the ticket will be generated for (Project is usually capital... just saying).  
+  * LABELS -- any labels (comma delimited) you would like to create the ticket with. 'PagerDuty' is selected as default. Leave this as an empty string if you do not want a label for your newly created ticket. Example of multiple labels: 'PagerDuty,PD,extra-label'
+  * CUSTOM_FIELDS -- Any fields your project deems as necessary that are not of the default values from above. These must be comma delimited key:value pairs. Example: 'customfield_10021:value,customfield_10022:another value'
+
+_If your project requires many customfields to generate a ticket, this will make the setup longer_
+
   ```
-  Add custom configurations! (Look at configs.yml for example. 
+  "environment_variables": {
+    "JIRA_URL": "https://my-jira.jira.com", 
+    "JIRA_USERNAME": "service-account", 
+    "JIRA_PASSWORD": "topsecretpassword",
+    "JIRA_PROJECT": "DEVOPS",
+    "LABELS": "PagerDuty,PD,automated-ticket",
+    "CUSTOM_FIELDS": ""
+  },
+  ```
 
-3. Download dependencies and package project together into zip file: lambda.zip
-  _inside project root directory:_
-  ``` bash
-  bash setup.sh
-  ```  
+4. Upload to AWS
+  1. Follow directions to ensure your [~/.aws/credentials](http://boto3.readthedocs.io/en/latest/guide/configuration.html) file is set up
+  2. Run the following command from jiralice/jiralice directory (ls should show app.py)
+  ```chalice deploy```
+  3. Output should reveal the API Gateway endpoint. Copy this for the next step. (You will need to add 'create-ticket' to the end)!
 
-4. Upload lambda file to AWS
-  1. Log into your AWS account and navigate to Lambda
-  2. Click on "Create a Lambda Function"
-  3. Select Python 2.7 as language and "microsoft-http-endpoint" blueprint. Click next.
-  4. Configure your Lambda function. Give it a name and description.
-  5. For Lambda function code, select zip file. Upload the lambda.zip file from Step 3.
-  6. Set Lambda function handler and code
-    * Handler: alertToTicket.lambda_handler
-    * Role: "lambda_basic_execution"
-  7. Advanced settings. 128mb and 5 seconds should be plenty. 
-  8. No VPC necessary
-  9. Configure Endpoints -- The only defaults that need to be changed:
-    * Method: Post
-    * Security: Open 
-  10. Review and submit. Lambda is set up!
-  11. Navigate to "API Endpoints" and copy the API endpoint URL (you will need this for the next step). 
 
 5. Set up Pager Duty webhook.
   1. Navigate to your Pager Duty account
   1. Select a service you would like to create JIRA tickets from or create a new service
-  2. Click on "Add Webhook"
-  3. Give your webhook a name and paste the URL from the previous step. If you forgot to copy the API endpoint URL, go to AWS, navigate to Lambda, select your newly created Lambda function, and click on "API Endpoints."
+  2. Click on "Integrations" tab and and Extension "Generic Webhook"
+  3. Give your webhook a name and paste the URL from the previous step. After the last forward-slash, add the following: "create-ticket"
+    - full example of url is something like: "https://5x9iwjzqw3.execute-api.us-west-1.amazonaws.com/dev/create-ticket" (Notice I added create-ticket to the end. You need to do this!)
   4. You are done! Let's test it out
 
-## Test your Lambda function
+# Test your Lambda function
 1. In Pager Duty, navigate to the service you added the webhook to.
 2. Trigger an alert. NOTE: Make sure the person you are about to alert is aware that you are testing. You may want to create a new service or temporarily set yourself up as the on-call scheduled person. 
 4. Go to JIRA and ensure your ticket was generated correctly. If you see your ticket, SUCCESS! If your new ticket was not created within 5 seconds, continue to the next step. 
 3. Log in to AWS. Navigate to your Lambda function. Click on "Monitoring." Click on "View Logs in CloudWatch"
-4. View the log stream that was generated. This will give you some ideas as to why your ticket failed to be generated. Most likely, there are some custom fields you need to set to create tickets or your Configs were not properly configured. When you update the code, you will have to run the setup.sh again and reupload the zip file.  
+4. View the log stream that was generated. This will give you some ideas as to why your ticket failed to be generated. Most likely, there are some custom fields you need to set to create tickets or your Configs were not properly configured. When you update the code, you will have to run the `chalice deploy` to upload your new package.  
 
 
-## Running tests
+# Running tests
 1. To run the unit tests you must be in the project root directory and have nose installed
 
   ```
-  nosetests tests/ 
+  nosetests 
   ``` 
+_Tests are currently limited. Want to add more?_
 
 ## Contributing
 1. Fork the repository.

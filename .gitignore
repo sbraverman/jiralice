@@ -4,4 +4,4 @@
 **/*.*~
 **/*venvs
 **/*.swp
-**/*.chalice/*
+**/*.chalice*

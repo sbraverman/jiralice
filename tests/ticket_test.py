@@ -1,7 +1,7 @@
 import json
 import unittest
 from mock import MagicMock
-from pd2jira_python.controllers.ticket import Ticket
+from jiralice.chalicelib.models.ticket import Ticket
 import logging
 
 
@@ -9,7 +9,9 @@ class Ticket_Test(unittest.TestCase):
 
     def setUp(self):
         self.pd_webhook = self.get_data('pd_webhook.json')
-        self.ticket = Ticket(self.pd_webhook, False) 
+        config = self.get_data('config.json')
+        env_vars = config['environment_variables']
+        self.ticket = Ticket(self.pd_webhook, env_vars) 
 
     def get_data(self, name):
         with open('tests/stubs/{0}'.format(name), 'r') as test_data:

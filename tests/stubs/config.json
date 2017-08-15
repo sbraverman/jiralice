@@ -1,0 +1,18 @@
+{
+  "stages": {
+    "dev": {
+      "api_gateway_stage": "dev"
+    }
+  }, 
+  "version": "2.0", 
+  "app_name": "jiralice",
+  "environment_variables": {
+      "JIRA_URL": "https://test.atlassian.net",
+      "JIRA_PROJECT": "TEST",
+      "CUSTOM_FIELDS": "",
+      "ISSUE_TYPE": "Bug",
+      "LABELS": "PagerDuty",
+      "JIRA_USERNAME": "steven@stevenbraverman.com",
+      "JIRA_PASSWORD": "ThisIsmysecretpasswordhehe"
+  }
+}
