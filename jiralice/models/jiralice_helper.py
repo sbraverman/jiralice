@@ -27,7 +27,8 @@ class JiraliceHelper(object):
                 if incident_id in self.incident_ids:
                     continue
                 self.incident_ids.append(incident_id)
-                if PagerDuty.is_triggered_alert(message_data) and not Ticket.exists(message_data):
+                
+                if PagerDuty.is_triggered_alert(message_data) and not Ticket.exists(message_data, self.env_vars):
                     ticket = Ticket(message_data, self.env_vars)
                     ticket.create()
                     # TODO update_pager_duty_with_ticket_info()

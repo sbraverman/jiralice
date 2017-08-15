@@ -1,4 +1,5 @@
 import sys
+from sys import exit
 import os
 import requests
 import json
@@ -53,13 +54,13 @@ class Ticket(object):
             raise BadRequestError('Error occurred while creating ticket. {0}'.format(e))
 
     @classmethod
-    def exists(cls, data):
+    def exists(cls, data, env_vars):
         try:
             incident_number = cls.get_incident_number(data)
-            jira_url = cls.JIRA_URL
-            project = cls.JIRA_PROJECT
+            jira_url = env_vars['JIRA_URL']
+            project = env_vars['JIRA_PROJECT']
             search_ticket_url = "{0}/rest/api/2/search?jql=project={1}+and+text~'pagerduty+{2}'".format(jira_url, project, incident_number)
-            request = requests.get(search_ticket_url, auth=cls.get_jira_auth())
+            request = requests.get(search_ticket_url, auth=cls.get_jira_auth(env_vars['JIRA_USERNAME'], env_vars['JIRA_PASSWORD']))
             total_tickets = request.json()['total'] 
             if total_tickets > 0:
                 logging.info('A ticket for incident #{0} already exists in JIRA'.format(incident_number))
