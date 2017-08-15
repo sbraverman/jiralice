@@ -1,5 +1,5 @@
 from base import BaseController
-from models.jiralice_helper import JiraliceHelper
+from chalicelib.models.jiralice_helper import JiraliceHelper
 
 
 class JiraliceController(BaseController):

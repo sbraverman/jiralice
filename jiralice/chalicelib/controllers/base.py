@@ -1,6 +1,6 @@
 import os
 
-from models.schema_filter import Validator
+from chalicelib.models.schema_filter import Validator
 
 
 class BaseController(object):

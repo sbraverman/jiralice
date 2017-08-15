@@ -1,7 +1,7 @@
 from chalice import Chalice
 import os
 
-from controllers.jiralice import JiraliceController
+from chalicelib.controllers.jiralice import JiraliceController
 
 app = Chalice(app_name='jiralice')
 app.debug = True
